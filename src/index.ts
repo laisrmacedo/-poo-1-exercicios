@@ -113,8 +113,10 @@ app.post("/videos", async (req: Request, res: Response) => {
       }
 
       await db("videos").insert(newVideoDB)
-      const [ videoDB ]: TVideos[] = await db("videos").where({ id })
-      res.status(201).send(videoDB)
+
+      res.status(201).send({
+        message: "Video criado com sucesso"
+      })
 
   } catch (error) {
       console.log(error)
@@ -135,63 +137,68 @@ app.put("/videos/:id", async (req: Request, res: Response) => {
   try {
     const idToEdit = req.params.id
 
-    if(idToEdit === undefined){
+    if(idToEdit === ":id"){
       res.status(400)
       throw new Error("Informe um id")
     }
 
+    const [ foundVideo ]: TVideos[] = await db("videos").where({ id: idToEdit })
+    if(!foundVideo){
+      res.status(400)
+      throw new Error("Video não encontrado")
+    }
+
     const {newId, newTitle, newDuration} = req.body //dado cru
+
+    const [ videoDBExists ]: TVideos[] = await db("videos").where({ id: newId })
+    if (videoDBExists) {
+      res.status(400)
+      throw new Error("'id' já existe")
+    }
+    
+    const [ videoToEdit ]: TVideos[] = await db("videos").where({ id: idToEdit })
+    
+    const newVideo = new Video(
+      videoToEdit.id,
+      videoToEdit.title,
+      videoToEdit.duration,
+      videoToEdit.uploadAt
+    )
 
     if(newId !== undefined){
       if (typeof newId !== "string") {
-          res.status(400)
+        res.status(400)
           throw new Error("'id' deve ser string")
-      }
+        }
+        newVideo.setId(newId)
     }
 
     if(newTitle !== undefined){
       if (typeof newTitle !== "string") {
-          res.status(400)
-          throw new Error("'title' deve ser string")
+        res.status(400)
+        throw new Error("'title' deve ser string")
       }
+      newVideo.setTitle(newTitle)
     }
-
+    
     if(newDuration !== undefined){
       if (typeof newDuration !== "number") {
-          res.status(400)
-          throw new Error("'duration' deve ser string")
+        res.status(400)
+        throw new Error("'duration' deve ser string")
       }
+      newVideo.setDuration(newDuration)
     }
 
-      const [ videoDBExists ]: TVideos[] = await db("videos").where({ id: newId })
-      // console.log(videoDBExists)
+    const newVideoDB = {
+      ...newVideo,
+      upload_at: newVideo.setUploadAt(new Date().toISOString())
+    }
 
-      if (videoDBExists) {
-          res.status(400)
-          throw new Error("'id' já existe")
-      }
+    await db("videos").update(newVideoDB).where({id: idToEdit})
 
-      const newVideo = new Video(
-        newId,
-        newTitle,
-        newDuration,
-        new Date().toISOString()
-      )
-
-      const [ foundVideo ]: TVideos[] = await db("videos").where({ id: idToEdit })
-
-      const newVideoDB = {
-          id: newVideo.getId() || foundVideo.id,
-          title: newVideo.getTitle() || foundVideo.title,
-          duration: newVideo.getDuration() || foundVideo.duration,
-          upload_at: newVideo.getUploadAt()
-      }
-
-      await db("videos").update(newVideoDB).where({id: idToEdit})
-
-      res.status(201).send({
-        message: "Video editado com sucesso",
-      })
+    res.status(201).send({
+      message: "Video editado com sucesso",
+    })
 
   } catch (error) {
       console.log(error)
