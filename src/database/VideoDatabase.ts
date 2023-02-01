@@ -24,11 +24,11 @@ export class VideoDatabase extends BaseDatabase{
   }
 
   //find video by id
-  public async findVideoById(id: string| undefined): Promise<TVideos | undefined>{
-    const [ videoDBExists ]: TVideos[] | undefined[] = await BaseDatabase
+  public async findVideoById(foundId: string| undefined): Promise<TVideos | undefined>{
+    const [foundVideo] : TVideos[] | undefined[] = await BaseDatabase
       .connection(VideoDatabase.TABLE_VIDEOS)
-      .where({ id })
-    return videoDBExists
+      .where({ id: foundId })
+    return foundVideo
   }
   
   //insert video
@@ -36,5 +36,21 @@ export class VideoDatabase extends BaseDatabase{
     await BaseDatabase
       .connection(VideoDatabase.TABLE_VIDEOS)
       .insert(newVideo)
+  }
+
+  //update video
+  public async updateVideo(editedVideo: TVideos, idToEdit: string): Promise<void>{
+    await BaseDatabase
+      .connection(VideoDatabase.TABLE_VIDEOS)
+      .update(editedVideo)
+      .where({ id: idToEdit })
+  }
+
+  //delete video
+  public async deleteVideo(idToDelete: string): Promise<void>{
+    await BaseDatabase
+    .connection(VideoDatabase.TABLE_VIDEOS)
+    .del()
+    .where({ id: idToDelete })
   }
 }

@@ -9,28 +9,32 @@ export class Video {
   public getId():string {
     return this.id
   }
-  public setId(newId: string):void {
+  public setId(newId: string): string {
     this.id = newId
+    return newId
   }
 
   public getTitle():string {
     return this.title
   }
-  public setTitle(newTitle: string):void {
+  public setTitle(newTitle: string):string {
     this.title = newTitle
+    return newTitle
   }
 
   public getDuration():number {
     return this.duration
   }
-  public setDuration(newDuration: number):void {
+  public setDuration(newDuration: number):number {
     this.duration = newDuration
+    return newDuration
   }
 
   public getUploadAt():string {
     return this.uploadAt
   }
-  public setUploadAt(newUploadAt: string):void {
+  public setUploadAt(newUploadAt: string):string {
     this.uploadAt = newUploadAt
+    return newUploadAt
   }
 }
